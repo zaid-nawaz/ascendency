@@ -233,6 +233,8 @@ def post_page(request):
             # i am checking if the last post in the span of a day , then i wont let the user upload another post.
         
             if delta.total_seconds() < 86400 and less_than_thousand_followers(logged_in_user):
+        
+            
                 print('cant let you post.')
             else:
                 if logged_in_user.user_post_count > 0:
