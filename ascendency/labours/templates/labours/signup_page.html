@@ -7,7 +7,7 @@
     <title>Document</title>
 </head>
 <body>
-    <form action="" method="post">
+    <form action="{% url 'signup_page' %}" method="post">  {% csrf_token %}
         <input type="text" name="username" placeholder="write your username">
         <input type="text" name="password" placeholder="write your password">
         <input type="text" name="invitation_code" placeholder="provide your invitation code">
