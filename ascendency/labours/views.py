@@ -21,7 +21,9 @@ def login_page(request):
         user_password = request.POST['password']
         authenticated_user = Labourinfo.objects.filter(name=user_name,password=user_password)
         if authenticated_user.exists():
-            return HttpResponseRedirect(reverse('index_page'))
+            request.session['logged_in_user_name'] = user_name
+            request.session['logged_in_user_password'] = user_password
+            return HttpResponseRedirect(reverse('LaboursProfile:index_page'))
         else:
             context = {'logged_in':False}
         return render(request,'labours/login_page.html',context)
@@ -43,5 +45,7 @@ def signup_page(request):
             return render(request, 'labours/signup_page.html',context)
     return render(request, 'labours/signup_page.html')
 
-def temp_index(request):
-    return HttpResponse('this is the temporary index page.')
+def logout_page(request):
+    del request.session['logged_in_user_name']
+    del request.session['logged_in_user_password']
+    return HttpResponseRedirect(reverse('labours:login_page'))

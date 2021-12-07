@@ -7,7 +7,7 @@
     <title>Document</title>
 </head>
 <body>
-    <form action="{% url 'login_page' %}" method="post">  {% csrf_token %}
+    <form action="{% url 'labours:login_page' %}" method="post">  {% csrf_token %}
         <input type="text" name="username" placeholder="write your username">
         <input type="text" name="password" placeholder="write your password">
         <button type="submit"> login </button>
