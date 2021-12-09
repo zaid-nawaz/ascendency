@@ -39,7 +39,7 @@ def signup_page(request):
         user_invitation_code = Labourinfo.objects.filter(user_invitation_code=invite_code)
         if user_invitation_code.exists():
             Labourinfo.objects.create(name=user_name,password=user_password,user_invitation_code=random_code_generator())
-            return HttpResponseRedirect(reverse('login_page'))
+            return HttpResponseRedirect(reverse('labours:login_page'))
         else:
             context = {'signed_up':False}
             return render(request, 'labours/signup_page.html',context)

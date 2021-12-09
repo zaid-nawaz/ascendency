@@ -10,5 +10,13 @@
     the name of the user is : {{ user_name }}<br>
     the number of followers this user has is :{{ user_followers_count }} <br>
     the number of following this user has is : {{ user_following_count }} <br>
+    {% if logged_in_profile %}
+    {% else %}
+    {% if show_unfollow_button %}
+    <a href="/unfollowView?username={{user_name}}&id={{user_id}}"><button>UNFOLLOW</button></a>
+    {% else %}
+    <a href="/followView?username={{user_name}}&id={{user_id}}"><button>FOLLOW</button></a>
+    {% endif %}
+    {% endif %}
 </body>
 </html>
