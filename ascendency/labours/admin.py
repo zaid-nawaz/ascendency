@@ -3,7 +3,8 @@ from __future__ import unicode_literals
 
 from django.contrib import admin
 
-from .models import Labourinfo 
+from .models import Labourinfo , Labourpost
 
 # Register your models here.
 admin.site.register(Labourinfo)
+admin.site.register(Labourpost)

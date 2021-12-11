@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.shortcuts import render
+
+from django.shortcuts import render, HttpResponseRedirect , redirect
+import datetime
 from django.http import HttpResponse
-from labours.models import Labourinfo
+
+from labours.models import Labourinfo , Labourpost
+from django.urls import reverse
+from django.utils import timezone
+
 # Create your views here.
 def index_page(request):
     return render(request, 'LaboursProfile/index_page.html')
@@ -15,15 +21,19 @@ def profile_page(request):
     logged_in_user = Labourinfo.objects.filter(name=logged_in_user_name, password=logged_in_user_password)[0]
     user_followers_count = len(logged_in_user.user_followers.all())
     user_following_count = len(logged_in_user.user_following.all())
+
+    user_post_images = Labourpost.objects.filter(labourer=logged_in_user).order_by('-published_date')
     context = {
         'user_id':logged_in_user.id,
         'user_name':logged_in_user.name,
         'user_followers_count': user_followers_count,
         'user_following_count': user_following_count,
         'show_unfollow_button' : False,
-        'logged_in_profile': True 
+        'logged_in_profile': True,
+        'user_post_images' : user_post_images, 
         
     }
+    
     return render(request, 'LaboursProfile/profile_page.html',context)
     
 def search_user(request):
@@ -54,12 +64,15 @@ def profile_visit(request):
         show_unfollow_button = False
     part_user_followers_count = len(particular_user.user_followers.all())
     part_user_following_count = len(particular_user.user_following.all())
+    particular_user_posts = Labourpost.objects.filter(labourer=particular_user).order_by('-published_date')
+
     context = {
         'user_id':particular_user.id,
         'user_name':particular_user.name,
         'user_followers_count': part_user_followers_count,
         'user_following_count': part_user_following_count,
         'show_unfollow_button' : show_unfollow_button,
+        'particular_user_posts' : particular_user_posts
         
     }
     
@@ -109,3 +122,41 @@ def unfollow_view(request):
 
     }
     return render(request, 'LaboursProfile/profile_page.html',context)
+
+def post_page(request):
+    if request.method == 'POST':
+        
+        name = request.session['logged_in_user_name']
+        password = request.session['logged_in_user_password']
+        logged_in_user = Labourinfo.objects.filter(name=name , password=password)[0]
+        post_image = request.FILES['labour_post']
+
+        # i am taking the latest post of the user and by writing this code
+        user_post_images = Labourpost.objects.filter(labourer=logged_in_user).order_by('-published_date')
+        latest_post = user_post_images[0]
+
+        # i am converting the today's date and published date of the latest post in certain string format to subtract it later
+
+        # strftime helps me to achieve that 
+
+        s1 = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
+        s2 = latest_post.published_date.strftime("%Y-%m-%d %H:%M:%S")
+
+        timeformat  = "%Y-%m-%d %H:%M:%S"
+
+        # now i am converting it back to datetime object to subtract it and get the time difference with the help of strptime function 
+
+        delta = datetime.datetime.strptime(s1, timeformat) - datetime.datetime.strptime(s2, timeformat)
+
+        # i am checking if the last post in the span of a day , then i wont let the user upload another post.
+        if delta.total_seconds() <  86400 :
+            print('cant let you post.')
+        else:
+            Labourpost.objects.create(labourer=logged_in_user, labour_image=post_image)
+ 
+        return HttpResponseRedirect(reverse('LaboursProfile:profile_page'))
+
+    
+   
+    
+    

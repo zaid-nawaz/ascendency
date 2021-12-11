@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models
 
-
+from datetime import datetime
 # Create your models here.
 class Labourinfo(models.Model):
     name = models.CharField(max_length=100)
@@ -14,4 +14,9 @@ class Labourinfo(models.Model):
     
     def __str__(self):
         return self.name
+
+class Labourpost(models.Model):
+    labourer = models.ForeignKey(Labourinfo,on_delete=models.CASCADE)
+    labour_image = models.ImageField(upload_to='')
+    published_date = models.DateTimeField(default=datetime.now, blank=True)
     

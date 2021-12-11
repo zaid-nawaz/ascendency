@@ -11,7 +11,7 @@ urlpatterns = [
     url(r'^profileVisit/',views.profile_visit,name='profile_visit'),
     url(r'^followView/',views.follow_view,name='follow_view'),
     url(r'^unfollowView/',views.unfollow_view,name='unfollow_view'),
-    
+    url(r'^postPage/',views.post_page, name='post_page'),
     
     
 ]
