@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import time
 
 
 from django.shortcuts import render, HttpResponseRedirect , redirect
@@ -9,10 +10,54 @@ from django.http import HttpResponse
 from labours.models import Labourinfo , Labourpost
 from django.urls import reverse
 from django.utils import timezone
+import threading
 
 # Create your views here.
 def index_page(request):
     return render(request, 'LaboursProfile/index_page.html')
+
+def updation(followers_count):
+    if followers_count >= 1000 and followers_count < 10000:
+        return 2
+    elif followers_count >= 10000 and followers_count < 100000:
+        return 4
+    elif followers_count >= 100000 and followers_count< 1000000:
+        return 10
+    elif followers_count > 1000000:
+        return 'infinity'
+    else:
+        return 1
+
+def post_count_renewal():
+    allobj = Labourinfo.objects.all()
+    while True:
+        for i in allobj:
+            i.user_post_count = i.max_post_count
+            i.save()
+            if updation(len(i.user_followers.all())) == 1:
+                i.user_post_count = 1
+                i.max_post_count = 1
+                i.save()
+            elif updation(len(i.user_followers.all())) == 2:
+                i.user_post_count = 2
+                i.max_post_count = 2
+                i.save()
+            elif updation(len(i.user_followers.all())) == 4:
+                i.user_post_count = 4
+                i.max_post_count = 4
+                i.save()
+            elif updation(len(i.user_followers.all())) == 10:
+                i.user_post_count = 10
+                i.max_post_count = 10
+                i.save()
+            elif updation(len(i.user_followers.all())) == 'infinity':
+                i.user_post_count = 1000000
+                i.max_post_count = 1000000
+                i.save()
+        print('zaid')
+        time.sleep(86400)
+   
+
 
 
 def profile_page(request):
@@ -79,6 +124,8 @@ def profile_visit(request):
     return render(request, 'LaboursProfile/profile_page.html',context)
 
 
+    
+
 def follow_view(request):
     user_name = request.GET['username']
     user_id = request.GET['id']
@@ -91,6 +138,8 @@ def follow_view(request):
     particular_user.user_followers.add(logged_in_user)
     part_user_followers_count = len(particular_user.user_followers.all())
     part_user_following_count = len(particular_user.user_following.all())
+
+   
     context = {
         'user_id':particular_user.id,
         'user_name':particular_user.name,
@@ -123,6 +172,13 @@ def unfollow_view(request):
     }
     return render(request, 'LaboursProfile/profile_page.html',context)
 
+def less_than_thousand_followers(logged_in_user):
+    if len(logged_in_user.user_followers.all()) < 1000:
+        return True
+    else:
+        return False
+    
+
 def post_page(request):
     if request.method == 'POST':
         
@@ -133,30 +189,42 @@ def post_page(request):
 
         # i am taking the latest post of the user and by writing this code
         user_post_images = Labourpost.objects.filter(labourer=logged_in_user).order_by('-published_date')
-        latest_post = user_post_images[0]
+        if user_post_images.exists():
 
-        # i am converting the today's date and published date of the latest post in certain string format to subtract it later
+            latest_post = user_post_images[0]
 
-        # strftime helps me to achieve that 
+            # i am converting the today's date and published date of the latest post in certain string format to subtract it later
 
-        s1 = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
-        s2 = latest_post.published_date.strftime("%Y-%m-%d %H:%M:%S")
+            # strftime helps me to achieve that 
 
-        timeformat  = "%Y-%m-%d %H:%M:%S"
+            s1 = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
+            s2 = latest_post.published_date.strftime("%Y-%m-%d %H:%M:%S")
 
-        # now i am converting it back to datetime object to subtract it and get the time difference with the help of strptime function 
+            timeformat  = "%Y-%m-%d %H:%M:%S"
 
-        delta = datetime.datetime.strptime(s1, timeformat) - datetime.datetime.strptime(s2, timeformat)
+            # now i am converting it back to datetime object to subtract it and get the time difference with the help of strptime function 
 
-        # i am checking if the last post in the span of a day , then i wont let the user upload another post.
-        if delta.total_seconds() <  86400 :
-            print('cant let you post.')
+            delta = datetime.datetime.strptime(s1, timeformat) - datetime.datetime.strptime(s2, timeformat)
+
+            # i am checking if the last post in the span of a day , then i wont let the user upload another post.
+            if delta.total_seconds() < 86400 and less_than_thousand_followers(logged_in_user):
+                print('cant let you post.')
+            else:
+                if logged_in_user.user_post_count > 0:
+                    Labourpost.objects.create(labourer=logged_in_user, labour_image=post_image)
+                    logged_in_user.user_post_count = logged_in_user.user_post_count - 1 
+                    logged_in_user.save()
+                else:
+                    print('sorry cant let you post')
+
         else:
             Labourpost.objects.create(labourer=logged_in_user, labour_image=post_image)
+            logged_in_user.user_post_count = logged_in_user.user_post_count - 1 
+            logged_in_user.save()
  
         return HttpResponseRedirect(reverse('LaboursProfile:profile_page'))
 
-    
+t = threading.Thread(target=post_count_renewal)
+t.start()
    
-    
     

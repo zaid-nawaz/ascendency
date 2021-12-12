@@ -10,3 +10,8 @@
 9. write the heirarchy logic.
 10. rewrite or polish your code to make it look minimalistic and make the asthetics a bit decent.
 
+9.1 -> if that user reach 1000 of followers then he can upload 2 pictures a day
+1000 - 2
+10000 - 4 
+100000 - 10 
+1000000 - unlimited 
