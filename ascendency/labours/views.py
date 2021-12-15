@@ -7,6 +7,7 @@ from django.shortcuts import render, HttpResponseRedirect
 from django.urls import reverse
 import random
 import string
+
 from labours.models import Labourinfo
 # Create your views here.
 def random_code_generator():
@@ -36,9 +37,10 @@ def signup_page(request):
         user_name = request.POST['username']
         user_password = request.POST['password']
         invite_code = request.POST['invitation_code']
+        profile_picture = request.FILES['profile_picture']
         user_invitation_code = Labourinfo.objects.filter(user_invitation_code=invite_code)
         if user_invitation_code.exists():
-            Labourinfo.objects.create(name=user_name,password=user_password,user_invitation_code=random_code_generator())
+            Labourinfo.objects.create(name=user_name,password=user_password,user_invitation_code=random_code_generator(),profile_picture=profile_picture)
             return HttpResponseRedirect(reverse('labours:login_page'))
         else:
             context = {'signed_up':False}

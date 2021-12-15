@@ -1,15 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    this is the search page. <br>
-    {% for people in search_results %}
-    <a href="/profileVisit?username={{people.name}}&id={{people.id}}"><div>{{people.name}}</div></a>
+
+{% extends 'LaboursProfile/base.html' %}
+{% block style %}
+<style>
+    .search-container{
+        position: absolute;
+        top: 6rem;
+        left : 1rem;
+    }
+    img{
+        vertical-align: middle;
+    border-radius: 47px;
+    margin: 11px;
+    border: 1px solid #707070;
+    padding: 2px;
+    }
+    .links{
+        color: #000000;
+    text-decoration: none;
+    position: relative;
+    left: 1rem;
+    }
+    hr{
+        width: 28rem;
+    }
+</style>
+{% endblock %}
+ 
+{% block content %}
+<div class="search-container">
+{% for people in search_results %}
+   <div><img src="/media/{{people.profile_picture}}" alt="" width="80" height="80"> <a href="/profileVisit?username={{people.name}}&id={{people.id}}" class="links">{{people.name}}</a></div><hr>
+ 
     {% endfor %}
-</body>
-</html>
+</div>
+{% endblock %}

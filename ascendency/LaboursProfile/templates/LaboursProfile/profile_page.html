@@ -1,43 +1,134 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    the name of the user is : {{ user_name }}<br>
-    the number of followers this user has is :{{ user_followers_count }} <br>
-    the number of following this user has is : {{ user_following_count }} <br>
+{% extends 'LaboursProfile/base.html' %}
+
+{% block style %}
+<style>
+.profile-container{
+
+    height: 260px;
+    width: 260px;
+    border-radius: 166px;
+    border: 3px solid #24153a;
+  
+    padding: 4px;
+}
+.all-container{
+    margin-top: 5rem;
+    display: flex;
+    flex-direction: row;
+    align-content: stretch;
+    justify-content: space-between;
+}
+p , label{
+    font-size: 27px;
+}
+
+label , .unfollow-button{
+    background-color: #3b1572;
+    width: 16rem;
+    color: white;
+    text-align: center;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    border: none;
+    font-size: 27px;
+   
+
+}
+.post-button , .follow-button{
+    background-color: #24153a;
+    width: 16rem;
+    color: white;
+    text-align: center;
+    border-radius: 10px;
+    border: none;
+    font-size: 27px;
+}
+
+.photo-container{
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+    left: 5rem;
+    overflow-y: scroll;
+    height: 33.8rem;
+}
+
+::-webkit-scrollbar {
+    width: 0;  
+    background: transparent;  
+}
+
+.post-img{
+    width: 283px;
+    height: 187px;
+
+}
+
+.theimageclass{
+     transition: transform .2s ease-in-out;
+}
+
+ .theimageclass:hover{
+              transform: scale(1.5);
+              opacity: 0.4;
+              
+            }
+            .imagecardback{
+              background-color: black;
+              overflow: hidden;
+              margin: 1px;
+            }
+.info-container{
+    text-align: center;
+}
+
+
+    
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class='container all-container'>
+    <div class="info-container">
+        <img src="/media/{{user_profile_picture}}" class="profile-container" alt="">
+        <p style="margin-top: 0.7rem;"> {{ user_name }}<br></p> 
+        <p>Followers : {{ user_followers_count }} </p>
+        <p>Following :  {{ user_following_count }} </p>
     {% if logged_in_profile %}
     {% else %}
     {% if show_unfollow_button %}
-    <a href="/unfollowView?username={{user_name}}&id={{user_id}}"><button>UNFOLLOW</button></a>
+    <a href="/unfollowView?username={{user_name}}&id={{user_id}}"><button class='unfollow-button'>UNFOLLOW</button></a>
     {% else %}
-    <a href="/followView?username={{user_name}}&id={{user_id}}"><button>FOLLOW</button></a><br>
+    <a href="/followView?username={{user_name}}&id={{user_id}}"><button class='follow-button'>FOLLOW</button></a>
 
     {% endif %}
     {% endif %}
     {% if logged_in_profile %}
     <form action="{% url 'LaboursProfile:post_page' %}" method="post" enctype="multipart/form-data"> {% csrf_token %}
-        <label for="choose_post">Choose post</label>
+        <label for="choose_post">Choose post</label><br>
         <input type="file" name="labour_post" id='choose_post' placeholder="choose post" style="display: none;">
-        <button type="submit">post</button>
+        <button type="submit" class='post-button'>post</button>
     </form>
     {% endif %}
+</div>
+
+    <div class="photo-container">
     {% if logged_in_profile %}
     {% for items in user_post_images %}
-
-        <img src="/media/{{items.labour_image}}" alt="post picture" width="100" height="100">
-   
-
+        <div class="imagecardback">
+        <img src="/media/{{items.labour_image}}" alt="post picture" class="post-img theimageclass">
+    </div>
+ 
     {% endfor %}
 
     {% else %}
     {% for items in particular_user_posts %}
-    <img src="/media/{{items.labour_image}}" alt="post picture" width="100" height="100">
+    <div class="imagecardback">
+    <img src="/media/{{items.labour_image}}" alt="post picture" class="post-img theimageclass">
+</div>
     {% endfor %}
     {% endif %}
-</body>
-</html>  
+</div>
+</div>
+{% endblock %}

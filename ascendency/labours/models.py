@@ -11,6 +11,7 @@ class Labourinfo(models.Model):
     user_invitation_code = models.CharField(max_length=100)
     followers = models.ManyToManyField('self',symmetrical=False, blank=True, null=True,related_name='user_followers')
     following = models.ManyToManyField('self',symmetrical=False, blank=True, null=True,related_name='user_following')
+    profile_picture = models.ImageField(upload_to='')
     user_post_count = models.IntegerField(default=1)
     max_post_count = models.IntegerField(default=1)
     

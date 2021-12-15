@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import time
+from django import http
 
 
 from django.shortcuts import render, HttpResponseRedirect , redirect
@@ -14,7 +15,13 @@ import threading
 
 # Create your views here.
 def index_page(request):
-    return render(request, 'LaboursProfile/index_page.html')
+    logged_in_user_name = request.session['logged_in_user_name']
+    logged_in_user_password = request.session['logged_in_user_password']
+    logged_in_user = Labourinfo.objects.filter(name=logged_in_user_name, password=logged_in_user_password)
+    if logged_in_user.exists():
+        return render(request, 'LaboursProfile/index_page.html')
+    else:
+        return render(request,'labours/login_page.html')
 
 def updation(followers_count):
     if followers_count >= 1000 and followers_count < 10000:
@@ -66,6 +73,7 @@ def profile_page(request):
     logged_in_user = Labourinfo.objects.filter(name=logged_in_user_name, password=logged_in_user_password)[0]
     user_followers_count = len(logged_in_user.user_followers.all())
     user_following_count = len(logged_in_user.user_following.all())
+    user_profile_picture = logged_in_user.profile_picture
 
     user_post_images = Labourpost.objects.filter(labourer=logged_in_user).order_by('-published_date')
     context = {
@@ -75,7 +83,8 @@ def profile_page(request):
         'user_following_count': user_following_count,
         'show_unfollow_button' : False,
         'logged_in_profile': True,
-        'user_post_images' : user_post_images, 
+        'user_post_images' : user_post_images,
+        'user_profile_picture':user_profile_picture,
         
     }
     
@@ -88,6 +97,13 @@ def search_user(request):
     for people in all_users:
         if searched_user_name.lower() in people.name.lower():
             search_result_users.append(people)
+
+    name = request.session['logged_in_user_name']
+    password = request.session['logged_in_user_password']
+    logged_in_user = Labourinfo.objects.filter(name=name , password=password)[0]
+
+    if logged_in_user in search_result_users:
+        search_result_users.remove(logged_in_user)
 
     context = {
         'search_results' : search_result_users
@@ -102,6 +118,7 @@ def profile_visit(request):
     password = request.session['logged_in_user_password']
     logged_in_user = Labourinfo.objects.filter(name=name , password=password)[0]
     particular_user = Labourinfo.objects.filter(name=user_name,id=user_id)[0]
+    user_profile_picture = particular_user.profile_picture
     
     if particular_user in logged_in_user.user_following.all():
         show_unfollow_button = True
@@ -117,7 +134,8 @@ def profile_visit(request):
         'user_followers_count': part_user_followers_count,
         'user_following_count': part_user_following_count,
         'show_unfollow_button' : show_unfollow_button,
-        'particular_user_posts' : particular_user_posts
+        'particular_user_posts' : particular_user_posts,
+        'user_profile_picture': user_profile_picture,
         
     }
     
@@ -138,14 +156,16 @@ def follow_view(request):
     particular_user.user_followers.add(logged_in_user)
     part_user_followers_count = len(particular_user.user_followers.all())
     part_user_following_count = len(particular_user.user_following.all())
-
-   
+    particular_user_posts = Labourpost.objects.filter(labourer=particular_user).order_by('-published_date')
+    user_profile_picture = particular_user.profile_picture
     context = {
         'user_id':particular_user.id,
         'user_name':particular_user.name,
         'user_followers_count': part_user_followers_count,
         'user_following_count': part_user_following_count,
         'show_unfollow_button' : True,
+        'particular_user_posts' : particular_user_posts,
+        'user_profile_picture': user_profile_picture,
         
     }
     return render(request, 'LaboursProfile/profile_page.html',context)
@@ -162,12 +182,16 @@ def unfollow_view(request):
     particular_user.user_followers.remove(logged_in_user)
     part_user_followers_count = len(particular_user.user_followers.all())
     part_user_following_count = len(particular_user.user_following.all())
+    particular_user_posts = Labourpost.objects.filter(labourer=particular_user).order_by('-published_date')
+    user_profile_picture = particular_user.profile_picture
     context = {
         'user_id':particular_user.id,
         'user_name':particular_user.name,
         'user_followers_count': part_user_followers_count,
         'user_following_count': part_user_following_count,
         'show_unfollow_button' : False,
+        'particular_user_posts' : particular_user_posts,
+        'user_profile_picture': user_profile_picture,
 
     }
     return render(request, 'LaboursProfile/profile_page.html',context)
@@ -207,6 +231,7 @@ def post_page(request):
             delta = datetime.datetime.strptime(s1, timeformat) - datetime.datetime.strptime(s2, timeformat)
 
             # i am checking if the last post in the span of a day , then i wont let the user upload another post.
+        
             if delta.total_seconds() < 86400 and less_than_thousand_followers(logged_in_user):
                 print('cant let you post.')
             else:
