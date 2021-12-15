@@ -61,7 +61,6 @@ def post_count_renewal():
                 i.user_post_count = 1000000
                 i.max_post_count = 1000000
                 i.save()
-        print('zaid')
         time.sleep(86400)
    
 
